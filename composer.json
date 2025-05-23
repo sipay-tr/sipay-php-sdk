@@ -29,7 +29,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9.6",
-    "satooshi/php-coveralls": "~0.6.1",
+    "satooshi/php-coveralls": "~0.6.1 || ~2.2.0",
     "friendsofphp/php-cs-fixer": "^3.68",
     "symfony/var-dumper": "^5.4"
   },
