@@ -15,7 +15,7 @@ This package is a PHP SDK for the Sipay API.
 ## Installation
 Run the following command under your project to install the package via [Composer](https://getcomposer.org/download/)
 ```bash
-composer require sipay/sipay-php-sdk
+composer require sipay-tr/sipay-php-sdk
 ```
 
 ## Getting Started
