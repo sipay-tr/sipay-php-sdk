@@ -55,6 +55,8 @@ $paymentInvoice
     ->setBillCountry('TURKEY')
     ->setBillPhone('905555555555')
     ->setBillEmail('example@gimali.com')
+    // cardholder's (end user's) IP address; in a web request use e.g. $_SERVER['REMOTE_ADDR'].
+    ->setIp($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1')
     ->setTransactionType(Sipay\Enums\TransactionType::PRE_AUTHORIZATION)
     ->setNewCard('John Doe', '4508034508034509', '12', '2026', '000');
 

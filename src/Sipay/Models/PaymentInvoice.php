@@ -41,6 +41,11 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
 
     protected $customerName;
 
+    /**
+     * IP address of the card holder (the end user paying), sent as "ip".
+     */
+    protected $ip;
+
     public function getCurrencyCode()
     {
         return $this->currencyCode;
@@ -139,6 +144,18 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
         return $this->customerName;
     }
 
+    public function getIp()
+    {
+        return $this->ip;
+    }
+
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
     public function generateHashKeyParts(): array
     {
         return [
@@ -193,6 +210,7 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
             ->add("bill_country", $this->getBillCountry())
             ->add("bill_phone", $this->getBillPhone())
             ->add("bill_email", $this->getBillEmail())
+            ->add("ip", $this->getIp())
             ->add("discount", $this->getDiscount())
             ->add("coupon", $this->getCoupon())
             ->add("transaction_type", $this->getTransactionType())
@@ -255,6 +273,7 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
             ->append("bill_country", $this->getBillCountry())
             ->append("bill_phone", $this->getBillPhone())
             ->append("bill_email", $this->getBillEmail())
+            ->append("ip", $this->getIp())
             ->append("discount", $this->getDiscount())
             ->append("coupon", $this->getCoupon())
             ->append("transaction_type", $this->getTransactionType())
