@@ -39,6 +39,22 @@ $sipay = new Sipay($sipayOptions);
 ## Examples
 Included in the project are a number of examples that cover almost all use-cases. Refer to the `samples` folder for more info.
 
+### Card Holder IP Address
+
+Card payments (`NonSecurePaymentInvoice`, `SecurePaymentInvoice` and `SavedCardPaymentInvoice`) accept the IP address of the card holder, i.e. the end user making the payment, not your server's IP. Set it with `setIp()` and it is sent to the API as the `ip` field.
+
+```php
+$paymentInvoice
+    // ...
+    ->setIp('203.0.113.10');
+```
+
+- **Format:** a valid IPv4 or IPv6 address. Invalid values are rejected by the API with `Cardholder IP is invalid.`
+- **Required or optional:** optional in the SDK. The API requires it only when the "Cardholder IP" field is marked mandatory in your merchant billing settings; payments without it are then rejected with `Cardholder IP is required.`
+
+> **Note:**
+> If your application runs behind a load balancer or reverse proxy, `REMOTE_ADDR` holds the proxy's address. Resolve the client IP from a trusted forwarding header (e.g. `X-Forwarded-For`) instead.
+
 
 ## Testing
 

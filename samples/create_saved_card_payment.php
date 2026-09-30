@@ -71,8 +71,7 @@ $paymentInvoice
     ->setBillCountry('TURKEY')
     ->setBillPhone('905555555555')
     ->setBillEmail('example@gimali.com')
-    // Card holder's (end user's) IP address; in a web request use e.g. $_SERVER['REMOTE_ADDR'].
-    ->setIp($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1')
+    ->setIp('203.0.113.10')
     ->setSavedCard(
         $anyCard->getCardToken(),
         $anyCard->getCustomerNumber(),
