@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sipay\Models;
 
+use Sipay\Exceptions\InvalidArgumentException;
 use Sipay\JsonBuilder;
 use Sipay\Requests\Concerns\InteractsHashKey;
 use Sipay\Requests\Contracts\WithHashKey;
@@ -149,8 +150,28 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
         return $this->ip;
     }
 
+    /**
+     * Accepts what the gateway accepts: any valid IPv4 or IPv6 address. IPv4-mapped IPv6
+     * ("::ffff:203.0.113.7") is unwrapped to plain IPv4. Pass null to clear the value.
+     *
+     * @throws InvalidArgumentException when the value is not a single valid IP address
+     */
     public function setIp($ip)
     {
+        if ($ip !== null) {
+            if (!is_string($ip) || filter_var($ip, FILTER_VALIDATE_IP) === false) {
+                // The value is deliberately not echoed: an IP address is personal data and
+                // exception messages end up in logs.
+                throw new InvalidArgumentException('Card holder IP address must be a valid IPv4 or IPv6 address.');
+            }
+
+            $binary = inet_pton($ip);
+
+            if (strlen($binary) === 16 && substr($binary, 0, 12) === str_repeat("\x00", 10) . "\xff\xff") {
+                $ip = inet_ntop(substr($binary, 12));
+            }
+        }
+
         $this->ip = $ip;
 
         return $this;

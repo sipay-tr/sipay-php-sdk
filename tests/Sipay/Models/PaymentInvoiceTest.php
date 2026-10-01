@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sipay\Models;
 
+use Sipay\Exceptions\InvalidArgumentException;
 use Sipay\TestCase;
 
 class PaymentInvoiceTest extends TestCase
@@ -64,6 +65,64 @@ class PaymentInvoiceTest extends TestCase
         $this->assertNull($invoice->getIp());
         $this->assertArrayNotHasKey('ip', $invoice->getJsonObject());
         $this->assertStringNotContainsString('ip=', $invoice->toPKIRequestString());
+    }
+
+    public function validIpProvider(): array
+    {
+        return [
+            'IPv4' => ['203.0.113.10', '203.0.113.10'],
+            'IPv6' => ['2001:db8::10', '2001:db8::10'],
+            'IPv4-mapped IPv6 is unwrapped to IPv4' => ['::ffff:203.0.113.7', '203.0.113.7'],
+            'IPv4-mapped IPv6, upper case' => ['::FFFF:203.0.113.7', '203.0.113.7'],
+        ];
+    }
+
+    /**
+     * @dataProvider validIpProvider
+     */
+    public function testSetIpAcceptsValidAddresses(string $ip, string $expected): void
+    {
+        $invoice = new NonSecurePaymentInvoice($this->createTestOptions());
+
+        $this->assertEquals($expected, $invoice->setIp($ip)->getIp());
+    }
+
+    public function invalidIpProvider(): array
+    {
+        return [
+            'empty string' => [''],
+            'X-Forwarded-For list' => ['203.0.113.7, 10.0.0.1'],
+            'surrounding whitespace' => [' 203.0.113.7 '],
+            'hostname' => ['localhost'],
+            'out of range IPv4' => ['256.1.1.1'],
+            'array' => [['203.0.113.7']],
+            'integer' => [3405803786],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidIpProvider
+     */
+    public function testSetIpRejectsInvalidValues($ip): void
+    {
+        $invoice = new NonSecurePaymentInvoice($this->createTestOptions());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Card holder IP address must be a valid IPv4 or IPv6 address.');
+
+        $invoice->setIp($ip);
+    }
+
+    public function testSetIpWithNullClearsTheValue(): void
+    {
+        $invoice = $this->createInvoice(NonSecurePaymentInvoice::class, function (PaymentInvoice $invoice): void {
+            $invoice->setNewCard('John Doe', '4508034508034509', '12', '2026', '000');
+        });
+
+        $invoice->setIp('203.0.113.10')->setIp(null);
+
+        $this->assertNull($invoice->getIp());
+        $this->assertArrayNotHasKey('ip', $invoice->getJsonObject());
     }
 
     public function testIpDoesNotChangeHashKeyParts(): void

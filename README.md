@@ -49,11 +49,11 @@ $paymentInvoice
     ->setIp('203.0.113.10');
 ```
 
-- **Format:** a valid IPv4 or IPv6 address. Invalid values are rejected by the API with `Cardholder IP is invalid.`
+- **Format:** a single valid IPv4 or IPv6 address, the same rule the API applies (values it rejects fail with `Cardholder IP is invalid.`). `setIp()` checks this up front and throws `Sipay\Exceptions\InvalidArgumentException` for anything else, such as an empty string or a comma-separated list. An IPv4-mapped IPv6 address (`::ffff:203.0.113.7`) is converted to plain IPv4.
 - **Required or optional:** optional in the SDK. The API requires it only when the "Cardholder IP" field is marked mandatory in your merchant billing settings; payments without it are then rejected with `Cardholder IP is required.`
 
 > **Note:**
-> If your application runs behind a load balancer or reverse proxy, `REMOTE_ADDR` holds the proxy's address. Resolve the client IP from a trusted forwarding header (e.g. `X-Forwarded-For`) instead.
+> Behind a load balancer or reverse proxy, `REMOTE_ADDR` is the proxy's address. Use your framework's client IP helper with trusted proxies configured (e.g. Symfony `Request::getClientIp()`, Laravel `$request->ip()`). Don't pass the raw `X-Forwarded-For` header: it can contain several addresses, and the client controls it unless your own proxy overwrites it.
 
 
 ## Testing

@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-- Card holder IP address for card payments: `setIp()` / `getIp()` on `NonSecurePaymentInvoice`, `SecurePaymentInvoice` and `SavedCardPaymentInvoice`, sent to the API as `ip` ([PS-3458](https://sipay.atlassian.net/browse/PS-3458)).
+- Card holder IP address for card payments: `setIp()` / `getIp()` on `NonSecurePaymentInvoice`, `SecurePaymentInvoice` and `SavedCardPaymentInvoice`, sent to the API as `ip` ([PS-3458](https://sipay.atlassian.net/browse/PS-3458)). `setIp()` accepts a single valid IPv4 or IPv6 address, converts IPv4-mapped IPv6 (`::ffff:…`) to IPv4, and throws `Sipay\Exceptions\InvalidArgumentException` for anything else.
 - Payment samples now send the card holder IP address.
 
 ### Upgrade Notes
