@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [1.1.0] - 2026-10-01
 
 ### Added
 
@@ -14,6 +14,6 @@ All notable changes to this project are documented in this file.
 - No breaking changes. `ip` is only sent when `setIp()` is called, so existing integrations keep working.
 - If your merchant account has the "Cardholder IP" billing field set to mandatory, payments without a valid IP are rejected. Call `setIp()` with the end user's IP address (not your server's) on every card payment. See the "Card Holder IP Address" section in the README.
 
-## [1.0.0]
+## [1.0.0] - 2025-05-23
 
 - Initial release.
