@@ -61,10 +61,16 @@ To run a test method in test file, you can use the following example command:
 
 ## Releasing
 
-Releases are created from `main` with the **Release** workflow (Actions → Release → Run workflow):
+Releases are created with the **Release** workflow (Actions → Release → Run workflow):
 
-- Pick a `patch`, `minor` or `major` bump; the next `vX.Y.Z` tag is computed from the latest tag.
+- Pick a `patch`, `minor` or `major` bump; the next `vX.Y.Z` tag is computed from the latest stable tag.
 - CI (code style + tests on all supported PHP versions) must pass before the tag and GitHub release are created.
-- Release notes are generated automatically; anything entered in `notes` is prepended to them.
+- Release notes are generated automatically since the previous stable release; anything entered in `notes` is prepended to them.
 - Enable `dry_run` to see the computed version and run CI without tagging or releasing.
+
+Stable releases can only be created from `main`. To test a version before releasing it, enable `prerelease`: this creates a release candidate such as `v1.1.0-rc.1` (then `rc.2`, ...), and can be run from any branch that contains this workflow. Release candidates are marked as pre-releases on GitHub and are not installed by default on Packagist; install one explicitly:
+
+```bash
+composer require sipay-tr/sipay-php-sdk:1.1.0-rc.1
+```
 
