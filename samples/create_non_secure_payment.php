@@ -55,6 +55,7 @@ $paymentInvoice
     ->setBillCountry('TURKEY')
     ->setBillPhone('905555555555')
     ->setBillEmail('example@gimali.com')
+    ->setIp('203.0.113.10')
     ->setTransactionType(Sipay\Enums\TransactionType::PRE_AUTHORIZATION)
     ->setNewCard('John Doe', '4508034508034509', '12', '2026', '000');
 

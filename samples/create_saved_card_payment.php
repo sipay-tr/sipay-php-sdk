@@ -71,6 +71,7 @@ $paymentInvoice
     ->setBillCountry('TURKEY')
     ->setBillPhone('905555555555')
     ->setBillEmail('example@gimali.com')
+    ->setIp('203.0.113.10')
     ->setSavedCard(
         $anyCard->getCardToken(),
         $anyCard->getCustomerNumber(),
