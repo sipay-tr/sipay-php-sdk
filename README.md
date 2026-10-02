@@ -68,7 +68,7 @@ Releases are created with the **Release** workflow (Actions → Release → Run 
 - Release notes are generated automatically since the previous stable release; anything entered in `notes` is prepended to them.
 - Enable `dry_run` to see the computed version and run CI without tagging or releasing.
 
-Stable releases can only be created from `main`. To test a version before releasing it, enable `prerelease`: this creates a release candidate such as `v1.1.0-rc.1` (then `rc.2`, ...), and can be run from any branch that contains this workflow. Release candidates are marked as pre-releases on GitHub and are not installed by default on Packagist; install one explicitly:
+Stable releases can only be created from `main`. To test a version before releasing it, enable `prerelease`: this creates a release candidate such as `v1.1.0-rc.1` (then `rc.2`, ...), and can be run from any branch that contains this workflow and every stable release (merge `main` into it first). Release candidates are marked as pre-releases on GitHub and are not installed by default on Packagist; install one explicitly:
 
 ```bash
 composer require sipay-tr/sipay-php-sdk:1.1.0-rc.1
