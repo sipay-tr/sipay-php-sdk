@@ -1,0 +1,93 @@
+name: Release
+
+run-name: Release (${{ inputs.bump }}${{ inputs.dry_run && ', dry run' || '' }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      notes:
+        description: 'Extra notes (prepended to the auto-generated notes)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run (compute version and run CI, but do not tag or release)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+    - name: Ensure release runs from main
+      if: github.ref != 'refs/heads/main'
+      run: |
+        echo "::error::Releases can only be created from main (got $GITHUB_REF)."
+        exit 1
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Compute next version
+      id: version
+      env:
+        BUMP: ${{ inputs.bump }}
+      run: |
+        version="$(git tag --list 'v*' | .github/scripts/next-version.sh "$BUMP")"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "Next version: **$version** (\`$BUMP\` bump of \`${GITHUB_SHA::7}\`)" >> "$GITHUB_STEP_SUMMARY"
+
+  ci:
+    needs: prepare
+    uses: ./.github/workflows/php.yml
+
+  release:
+    needs: [ prepare, ci ]
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Create and push tag
+      env:
+        VERSION: ${{ needs.prepare.outputs.version }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git tag -a "$VERSION" -m "Release $VERSION" "$GITHUB_SHA"
+        git push origin "refs/tags/$VERSION"
+
+    - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.prepare.outputs.version }}
+        NOTES: ${{ inputs.notes }}
+      run: |
+        args=(--verify-tag --title "$VERSION" --generate-notes)
+        if [[ -n "$NOTES" ]]; then
+          args+=(--notes "$NOTES")
+        fi
+        gh release create "$VERSION" "${args[@]}"
+        echo "Released [$VERSION]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$VERSION)" >> "$GITHUB_STEP_SUMMARY"

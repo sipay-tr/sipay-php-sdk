@@ -59,3 +59,12 @@ To run a test method in test file, you can use the following example command:
 ./vendor/bin/phpunit --filter testRetrieveWithSuccessfulResponse tests/Sipay/Resources/CardListTest.php
 ```
 
+## Releasing
+
+Releases are created from `main` with the **Release** workflow (Actions → Release → Run workflow):
+
+- Pick a `patch`, `minor` or `major` bump; the next `vX.Y.Z` tag is computed from the latest tag.
+- CI (code style + tests on all supported PHP versions) must pass before the tag and GitHub release are created.
+- Release notes are generated automatically; anything entered in `notes` is prepended to them.
+- Enable `dry_run` to see the computed version and run CI without tagging or releasing.
+

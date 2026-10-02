@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_call:
 
 permissions:
   contents: read
@@ -44,3 +45,6 @@ jobs:
 
     - name: Check Code Styling
       run: composer cs-check
+
+    - name: Run Tests
+      run: vendor/bin/phpunit
