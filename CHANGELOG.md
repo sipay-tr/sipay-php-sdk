@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.0] - Unreleased
+
+### Added
+
+- SDK identification on all API requests, including token retrieval, via `X-Sipay-Plugin: php-sdk` and `X-Sipay-Plugin-Version`.
+- `Sipay::VERSION` as the runtime version source and CI/release checks that prevent version and release tag mismatches.
+
 ## [1.1.0] - 2026-10-01
 
 ### Added

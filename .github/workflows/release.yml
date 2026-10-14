@@ -53,6 +53,11 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+
     - name: Ensure this commit can be released
       run: |
         stable='^v[0-9]+\.[0-9]+\.[0-9]+$'
@@ -79,6 +84,7 @@ jobs:
           args+=(--rc)
         fi
         version="$(git tag --list 'v*' | .github/scripts/next-version.sh "${args[@]}")"
+        php scripts/check-version.php "$version"
         # Release notes always start from the previous stable tag, skipping RCs
         notes_start_tag="$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' 2>/dev/null || true)"
         echo "version=$version" >> "$GITHUB_OUTPUT"

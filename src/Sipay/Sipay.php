@@ -22,6 +22,10 @@ use Sipay\Resources\TransactionStatus;
 
 class Sipay
 {
+    public const VERSION = '1.3.0';
+
+    public const SDK_IDENTIFIER = 'php-sdk';
+
     private SipayOptions $options;
 
     public function __construct($options)

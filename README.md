@@ -77,6 +77,17 @@ To run a test method in test file, you can use the following example command:
 
 ## Releasing
 
+`Sipay\Sipay::VERSION` is the SDK's version source. Every API request, including
+token retrieval, sends `X-Sipay-Plugin: php-sdk` and
+`X-Sipay-Plugin-Version: <VERSION>` using the same header names as the plugins.
+The API must recognize `php-sdk` in its plugin identifier whitelist for this
+identity to appear in its logs. These headers do not contain credentials.
+
+Before a release, update `Sipay::VERSION` and the changelog in a PR. The release
+workflow verifies that the computed tag matches this version before running CI
+or creating a tag. Release candidates send the same numeric version as their
+stable release. Check manually with `php scripts/check-version.php v1.3.0`.
+
 Releases are created with the **Release** workflow (Actions → Release → Run workflow):
 
 - Pick a `patch`, `minor` or `major` bump; the next `vX.Y.Z` tag is computed from the latest stable tag.

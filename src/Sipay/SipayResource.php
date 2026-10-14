@@ -135,15 +135,14 @@ class SipayResource
         return [
             "Accept: application/json",
             "Content-type: application/json",
+            'X-Sipay-Plugin: ' . Sipay::SDK_IDENTIFIER,
+            'X-Sipay-Plugin-Version: ' . Sipay::VERSION,
         ];
     }
 
     protected function getHttpHeaders(): array
     {
-        $headers = [
-            "Accept: application/json",
-            "Content-type: application/json",
-        ];
+        $headers = $this->getHttpHeadersWithoutAuth();
 
         $token = $this->getAuthenticationToken();
 
