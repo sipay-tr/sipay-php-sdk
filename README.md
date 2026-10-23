@@ -36,6 +36,16 @@ $sipay = new Sipay($sipayOptions);
 > **Note:** 
 > For Test API server and credentials, you can check the [Sipay API Documentation](https://apidocs.sipay.com.tr/#tag/Erisim-URL'leri)
 
+### Request Headers
+
+Every API request, including token retrieval, identifies the SDK with the headers below. They contain no credentials or payment data; add them to any outbound header allowlist you maintain.
+
+```
+User-Agent: sipay-php-sdk/<SDK version> PHP/<PHP version>
+X-Sipay-Plugin: php-sdk
+X-Sipay-Plugin-Version: <SDK version>
+```
+
 ## Examples
 Included in the project are a number of examples that cover almost all use-cases. Refer to the `samples` folder for more info.
 
@@ -81,12 +91,15 @@ Releases are created with the **Release** workflow (Actions → Release → Run 
 
 - Pick a `patch`, `minor` or `major` bump; the next `vX.Y.Z` tag is computed from the latest stable tag.
 - CI (code style + tests on all supported PHP versions) must pass before the tag and GitHub release are created.
-- Release notes are generated automatically since the previous stable release; anything entered in `notes` is prepended to them.
+- The workflow sets `Sipay\Sipay::VERSION` (sent in the `User-Agent` and `X-Sipay-Plugin-Version` headers) to the new version in a `Release vX.Y.Z` commit, pushes that commit to `main` and tags it. Don't edit `VERSION` by hand: on `main` it is always the latest stable release, and CI fails if a change lowers it. If `main` gets branch protection, allow GitHub Actions to push to it.
+- Release notes are generated automatically since the previous stable release; anything entered in `notes` is prepended to them. Put upgrade notes (breaking changes, new requirements) there.
 - Enable `dry_run` to see the computed version and run CI without tagging or releasing.
 
-Stable releases can only be created from `main`. To test a version before releasing it, enable `prerelease`: this creates a release candidate such as `v1.1.0-rc.1` (then `rc.2`, ...), and can be run from any branch that contains this workflow and every stable release (merge `main` into it first). Release candidates are marked as pre-releases on GitHub and are not installed by default on Packagist; install one explicitly:
+The API identifies SDK traffic by `X-Sipay-Plugin: php-sdk`, so `php-sdk` must be in its plugin identifier whitelist before a release that changes these headers.
+
+Stable releases can only be created from `main`. To test a version before releasing it, enable `prerelease`: this creates a release candidate such as `vX.Y.Z-rc.1` (then `rc.2`, ...), and can be run from any branch that contains this workflow and every stable release (merge `main` into it first). An RC's release commit sets `VERSION` to `X.Y.Z` and is only reachable through its tag; the branch is not changed. Release candidates are marked as pre-releases on GitHub and are not installed by default on Packagist; install one explicitly:
 
 ```bash
-composer require sipay-tr/sipay-php-sdk:1.1.0-rc.1
+composer require sipay-tr/sipay-php-sdk:X.Y.Z-rc.1
 ```
 

@@ -11,6 +11,18 @@ permissions:
   contents: read
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Sipay::VERSION is set by the Release workflow; catch merges that lower it below a release
+    - name: Validate SDK version
+      run: php scripts/version.php check "$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' 2>/dev/null || true)"
+
   build:
 
     runs-on: ubuntu-latest

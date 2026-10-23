@@ -127,7 +127,13 @@ class SipayResource
     {
         $headers = $withAuth ? $this->getHttpHeaders() : $this->getHttpHeadersWithoutAuth();
 
-        return array_merge($headers, $otherHeaders);
+        // Header names are case-insensitive; a later header replaces an earlier one with the same name
+        $merged = [];
+        foreach (array_merge($headers, $otherHeaders) as $header) {
+            $merged[strtolower(trim(explode(':', $header, 2)[0]))] = $header;
+        }
+
+        return array_values($merged);
     }
 
     protected function getHttpHeadersWithoutAuth(): array
@@ -135,15 +141,15 @@ class SipayResource
         return [
             "Accept: application/json",
             "Content-type: application/json",
+            'User-Agent: sipay-php-sdk/' . Sipay::VERSION . ' PHP/' . PHP_VERSION,
+            'X-Sipay-Plugin: ' . Sipay::SDK_IDENTIFIER,
+            'X-Sipay-Plugin-Version: ' . Sipay::VERSION,
         ];
     }
 
     protected function getHttpHeaders(): array
     {
-        $headers = [
-            "Accept: application/json",
-            "Content-type: application/json",
-        ];
+        $headers = $this->getHttpHeadersWithoutAuth();
 
         $token = $this->getAuthenticationToken();
 
@@ -160,7 +166,7 @@ class SipayResource
         $request->setAppId($options->getApiKey());
         $request->setAppSecret($options->getApiSecret());
 
-        $tokenResource = new Token($options);
+        $tokenResource = new Token($options, $this->getHttpClient());
         $token = $tokenResource->retrieve($request);
 
         if ($token->getStatusCode() !== 100 || !$token->getToken()) {

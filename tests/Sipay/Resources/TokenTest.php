@@ -47,7 +47,15 @@ class TokenTest extends TestCase
             ->method('post')
             ->with(
                 $this->stringContains('/api/token'),
-                $this->anything(),
+                $this->callback(function (array $headers): bool {
+                    $this->assertContains('X-Sipay-Plugin: php-sdk', $headers);
+                    $this->assertContains('X-Sipay-Plugin-Version: ' . \Sipay\Sipay::VERSION, $headers);
+                    foreach ($headers as $header) {
+                        $this->assertNotSame(0, stripos($header, 'Authorization:'));
+                    }
+
+                    return true;
+                }),
                 $this->callback(function ($params) {
                     return is_array($params)
                         && array_key_exists('app_id', $params)
