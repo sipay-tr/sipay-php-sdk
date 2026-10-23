@@ -36,6 +36,16 @@ $sipay = new Sipay($sipayOptions);
 > **Note:** 
 > For Test API server and credentials, you can check the [Sipay API Documentation](https://apidocs.sipay.com.tr/#tag/Erisim-URL'leri)
 
+### Request Headers
+
+Every API request, including token retrieval, identifies the SDK with the headers below. They contain no credentials or payment data; add them to any outbound header allowlist you maintain.
+
+```
+User-Agent: sipay-php-sdk/<SDK version> PHP/<PHP version>
+X-Sipay-Plugin: php-sdk
+X-Sipay-Plugin-Version: <SDK version>
+```
+
 ## Examples
 Included in the project are a number of examples that cover almost all use-cases. Refer to the `samples` folder for more info.
 
