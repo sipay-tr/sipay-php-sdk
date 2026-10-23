@@ -53,11 +53,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-
     - name: Ensure this commit can be released
       run: |
         stable='^v[0-9]+\.[0-9]+\.[0-9]+$'
@@ -84,7 +79,6 @@ jobs:
           args+=(--rc)
         fi
         version="$(git tag --list 'v*' | .github/scripts/next-version.sh "${args[@]}")"
-        php scripts/check-version.php "$version"
         # Release notes always start from the previous stable tag, skipping RCs
         notes_start_tag="$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude '*-*' 2>/dev/null || true)"
         echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -105,23 +99,36 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Create and push tag
+    - name: Create release commit and tag
       env:
         VERSION: ${{ needs.prepare.outputs.version }}
+        PRERELEASE: ${{ inputs.prerelease }}
       run: |
-        # On a re-run after a failed release step, reuse the tag pushed by the earlier attempt
-        if git fetch --depth=1 origin "refs/tags/$VERSION:refs/tags/$VERSION" 2>/dev/null; then
-          if [[ "$(git rev-parse "refs/tags/$VERSION^{commit}")" != "$GITHUB_SHA" ]]; then
+        # On a re-run after a failed release step, reuse the tag pushed by the earlier attempt.
+        # It is on the release commit (child of this commit), or on this commit if VERSION already matched.
+        if git fetch --depth=2 origin "refs/tags/$VERSION:refs/tags/$VERSION" 2>/dev/null; then
+          tagged="$(git rev-parse "refs/tags/$VERSION^{commit}")"
+          if [[ "$tagged" != "$GITHUB_SHA" && "$(git rev-parse "$tagged^" 2>/dev/null)" != "$GITHUB_SHA" ]]; then
             echo "::error::Tag $VERSION already exists on another commit."
             exit 1
           fi
-          echo "Tag $VERSION already exists on ${GITHUB_SHA::7}, reusing it."
+          echo "Tag $VERSION already exists on ${tagged::7}, reusing it."
           exit 0
         fi
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git tag -a "$VERSION" -m "Release $VERSION" "$GITHUB_SHA"
-        git push origin "refs/tags/$VERSION"
+        php scripts/version.php set "$VERSION"
+        refs=("refs/tags/$VERSION")
+        if ! git diff --quiet; then
+          git commit -qam "Release $VERSION"
+          # Stable release commits land on main; RC release commits are reachable only through their tag.
+          # The atomic push fails if main moved since the release started, so only CI-tested code is released.
+          if [[ "$PRERELEASE" != "true" ]]; then
+            refs+=("HEAD:$GITHUB_REF")
+          fi
+        fi
+        git tag -a "$VERSION" -m "Release $VERSION"
+        git push --atomic origin "${refs[@]}"
 
     - name: Create GitHub release
       env:

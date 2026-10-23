@@ -22,7 +22,8 @@ use Sipay\Resources\TransactionStatus;
 
 class Sipay
 {
-    public const VERSION = '1.3.0';
+    // Set by the Release workflow; do not edit by hand
+    public const VERSION = '1.2.0';
 
     public const SDK_IDENTIFIER = 'php-sdk';
 
