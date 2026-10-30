@@ -65,4 +65,10 @@ $request->setPaymentInvoice($paymentInvoice);
 
 $nonSecurePayment = $sipay->nonSecurePaymentResource()->create($request);
 
+// The SDK signs the request with hash v2, so Sipay signs the response with hash v2 too.
+// Check it before you trust the payment result.
+if (!$nonSecurePayment->validateHashKey($sipayOptions->getApiSecret())) {
+    exit('Invalid response hash: do not mark the order as paid.');
+}
+
 dump($nonSecurePayment);

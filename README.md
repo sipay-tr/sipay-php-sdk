@@ -55,6 +55,37 @@ $paymentInvoice
 > **Note:**
 > Behind a load balancer or reverse proxy, `REMOTE_ADDR` is the proxy's address. Use your framework's client IP helper with trusted proxies configured (e.g. Symfony `Request::getClientIp()`, Laravel `$request->ip()`). Don't pass the raw `X-Forwarded-For` header: it can contain several addresses, and the client controls it unless your own proxy overwrites it.
 
+### Hash Key (v2)
+
+Every request that carries a `hash_key` (card payments 2D, 3D and saved card, complete payment, confirm payment, status check, refund, card save, card update and card delete) is signed with **hash v2**: `hex(HMAC-SHA256(app_secret, fields joined with '|'))`, 64 hex characters. The SDK builds it for you from your `SipayOptions`. No new setting is needed.
+
+- **Amounts are sent as strings.** Hash v2 signs each value exactly as it is sent (`100` and `100.00` give different hashes). The SDK therefore sends `total` and the refund `amount` as the same string it signs. A float total of `100.0` is sent as `"100"`. Pass a string such as `'100.00'` to `setTotal()` if you want a fixed format.
+- **No `|` in a signed value.** `invoice_id`, the card holder name and the other signed values must not contain `|`. The SDK throws `Sipay\Exceptions\InvalidArgumentException` before it sends such a request.
+- **Payment links stay on v1.** `/purchase/link` does not accept hash v2 yet, so `PaymentLinkInvoice` still signs with v1.
+
+#### Checking the response hash
+
+When the request is signed with v2, Sipay signs the payment result with v2 too. Check this hash before you mark an order as paid, and also compare the total and currency with your own order.
+
+```php
+use Sipay\Utils\HashKey;
+
+// 2D payment
+$payment = $sipay->nonSecurePaymentResource()->create($request);
+$isValid = $payment->validateHashKey('<API SECRET>');
+
+// 3D payment: on your return_url / cancel_url
+$isValid = HashKey::validateResponseHashKey($_POST ?: $_GET, '<API SECRET>');
+
+// Sale webhook: it signs "status" in place of "payment_status"
+$isValid = HashKey::validateResponseHashKey($_POST, '<API SECRET>', HashKey::SALE_WEBHOOK_FIELDS);
+```
+
+The hash signs `payment_status` (`status` for the webhook), `total`, `invoice_id`, `order_id` and `currency_code`, in that order, exactly as received. A v1 hash, a missing hash or a changed value fails the check. See `samples/validate_return_url_hash_key.php` and `samples/validate_sale_webhook_hash_key.php`.
+
+> **Deprecated:**
+> `HashKey::validateHashKey()` (the v1 response check) and `HashKey::generateHashKey()` (v1) still work until the Sipay hash v1 cutoff, and will be removed in the first release after it. A v1 hash is not authenticated: whoever holds one valid hash can change the payment status in it without the app secret. See the upgrade notes in [CHANGELOG.md](CHANGELOG.md).
+
 
 ## Testing
 

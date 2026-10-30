@@ -66,6 +66,12 @@ class NonSecurePaymentMapper extends SipayResourceMapper implements JsonMapper
             if (isset($this->jsonBody->data->hash_key)) {
                 $this->resource->setHashKey($this->jsonBody->data->hash_key);
             }
+            if (isset($this->jsonBody->data->total)) {
+                $this->resource->setTotal($this->jsonBody->data->total);
+            }
+            if (isset($this->jsonBody->data->currency_code)) {
+                $this->resource->setCurrencyCode($this->jsonBody->data->currency_code);
+            }
         }
 
         return $this->resource;

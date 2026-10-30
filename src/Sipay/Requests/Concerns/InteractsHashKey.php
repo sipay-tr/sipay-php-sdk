@@ -10,6 +10,6 @@ trait InteractsHashKey
 {
     public function getHashKey(): string
     {
-        return HashKey::generateHashKey($this->generateHashKeyParts(), $this->getApiSecret());
+        return HashKey::generateHashKeyV2($this->generateHashKeyParts(), $this->getApiSecret());
     }
 }
