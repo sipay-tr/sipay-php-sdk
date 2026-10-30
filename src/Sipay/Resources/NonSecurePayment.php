@@ -8,6 +8,7 @@ use Sipay\Requests\CreateNonSecurePaymentRequest;
 use Sipay\Resources\Concerns\InteractsPaymentMethod;
 use Sipay\Resources\Mapper\NonSecurePaymentMapper;
 use Sipay\SipayResource;
+use Sipay\Utils\HashKey;
 
 class NonSecurePayment extends SipayResource
 {
@@ -46,6 +47,10 @@ class NonSecurePayment extends SipayResource
     private $amount;
 
     private $hashKey;
+
+    private $total;
+
+    private $currencyCode;
 
     public function create(CreateNonSecurePaymentRequest $request): self
     {
@@ -257,5 +262,50 @@ class NonSecurePayment extends SipayResource
         $this->hashKey = $hashKey;
 
         return $this;
+    }
+
+    /**
+     * The total the hash signs. Only a v2 response carries it.
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    public function setTotal($total)
+    {
+        $this->total = $total;
+
+        return $this;
+    }
+
+    /**
+     * The currency code the hash signs. Only a v2 response carries it.
+     */
+    public function getCurrencyCode()
+    {
+        return $this->currencyCode;
+    }
+
+    public function setCurrencyCode($currencyCode)
+    {
+        $this->currencyCode = $currencyCode;
+
+        return $this;
+    }
+
+    /**
+     * Checks the v2 response hash against the values in this response. A v1 or missing hash fails.
+     */
+    public function validateHashKey(string $appSecret): bool
+    {
+        return HashKey::validateResponseHashKey([
+            'payment_status' => $this->getPaymentStatus(),
+            'total' => $this->getTotal(),
+            'invoice_id' => $this->getInvoiceId(),
+            'order_id' => $this->getOrderId(),
+            'currency_code' => $this->getCurrencyCode(),
+            'hash_key' => $this->getHashKey(),
+        ], $appSecret);
     }
 }

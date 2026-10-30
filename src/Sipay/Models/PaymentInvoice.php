@@ -9,6 +9,7 @@ use Sipay\JsonBuilder;
 use Sipay\Requests\Concerns\InteractsHashKey;
 use Sipay\Requests\Contracts\WithHashKey;
 use Sipay\RequestStringBuilder;
+use Sipay\Utils\HashKey;
 
 abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
 {
@@ -177,10 +178,19 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
         return $this;
     }
 
+    /**
+     * Hash v2 signs the total exactly as it is sent, so it is sent as the same string
+     * (a JSON number such as 100.00 would reach the API as 100).
+     */
+    protected function getSignedTotal(): ?string
+    {
+        return $this->getTotal() === null ? null : HashKey::formatValue($this->getTotal());
+    }
+
     public function generateHashKeyParts(): array
     {
         return [
-            $this->getTotal(),
+            $this->getSignedTotal(),
             $this->getInstallmentsNumber(),
             $this->getCurrencyCode(),
             $this->getMerchantKey(),
@@ -220,7 +230,7 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
             ->add("name", $this->getName())
             ->add("surname", $this->getSurname())
             ->add("invoice_id", $this->getInvoiceId())
-            ->add("total", $this->getTotal())
+            ->add("total", $this->getSignedTotal())
             ->add("cancel_url", $this->getCancelUrl())
             ->add("return_url", $this->getReturnUrl())
             ->add("bill_address1", $this->getBillAddress1())
@@ -283,7 +293,7 @@ abstract class PaymentInvoice extends BasePaymentInvoice implements WithHashKey
             ->append("name", $this->getName())
             ->append("surname", $this->getSurname())
             ->append("invoice_id", $this->getInvoiceId())
-            ->append("total", $this->getTotal())
+            ->append("total", $this->getSignedTotal())
             ->append("cancel_url", $this->getCancelUrl())
             ->append("return_url", $this->getReturnUrl())
             ->append("bill_address1", $this->getBillAddress1())

@@ -8,6 +8,7 @@ use Sipay\JsonBuilder;
 use Sipay\Requests\Concerns\InteractsHashKey;
 use Sipay\Requests\Contracts\WithHashKey;
 use Sipay\RequestStringBuilder;
+use Sipay\Utils\HashKey;
 
 class PaymentLinkInvoice extends BasePaymentInvoice implements WithHashKey
 {
@@ -53,6 +54,15 @@ class PaymentLinkInvoice extends BasePaymentInvoice implements WithHashKey
         $this->currencyCode = $currencyCode;
 
         return $this;
+    }
+
+    /**
+     * Stays on hash v1: /purchase/link is not among the endpoints that accept hash v2
+     * (PFINT-1202), and a flow that stays on v1 at Sipay stays on v1 in the SDK (SMP-4868).
+     */
+    public function getHashKey(): string
+    {
+        return HashKey::generateHashKey($this->generateHashKeyParts(), $this->getApiSecret());
     }
 
     public function generateHashKeyParts(): array
